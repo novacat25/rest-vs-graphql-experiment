@@ -100,7 +100,7 @@ query {
 
 | Metric        | REST  | GraphQL |
 | ------------- | ----- | ------- |
-| API Calls     | 1 + N | 1       |
+| API Calls | 1 (aggregated) / 1+N (multiple) | 1 |
 | Response Size | ~4.11 KB | ~4.73 KB   |
 | Response Time | ~5 ms | ~20 ms   |
 | Flexibility   | Low   | High    |
@@ -110,7 +110,7 @@ query {
 
 | Metric         | REST (multiple) | GraphQL |
 |----------------|----------------|----------|
-| API Calls      | 1 + N          | 1        |
+| API Calls | 1 (aggregated) / 1+N (multiple) | 1 |
 | Response Time  | ~6 ms          | ~20 ms    |
 
 ---
@@ -127,7 +127,11 @@ query {
 
 ## ⚠️ N+1 Problem Demonstration
 
-GraphQL reduces API calls, but introduces internal execution overhead.
+GraphQL consolidates API calls into one request,
+but the N+1 problem can still occur internally — hidden inside resolver execution.
+
+This makes it harder to detect compared to REST,
+where multiple requests are explicitly visible in network logs.
 
 ### Example Logs
 
@@ -157,7 +161,8 @@ Fetching author for tweet 100
 
 * Reduces number of API requests
 * Allows flexible data fetching
-* Eliminates over-fetching / under-fetching
+* Can reduce over-fetching and under-fetching
+  (effectiveness depends on query design and schema structure)
 
 ---
 
@@ -167,6 +172,21 @@ Fetching author for tweet 100
 * Requires schema & resolver design
 * Can introduce N+1 performance issues
 * Harder to debug compared to REST
+
+---
+
+## ⚠️ Limitations of This Experiment
+
+- **In-memory data only**: N+1 has no real cost here.
+  In a database-backed environment, each resolver call would trigger a real query,
+  making the performance gap dramatically larger.
+
+- **No DataLoader**: The standard solution to GraphQL's N+1 problem (DataLoader)
+  was intentionally omitted to demonstrate the problem in isolation.
+
+- **Unequal comparison**: REST's `/tweets-with-authors` is a purpose-built endpoint
+  for this exact query. GraphQL's single endpoint serves all queries generically —
+  a fundamentally different design goal.
 
 ---
 
@@ -185,6 +205,7 @@ However:
 > GraphQL does not eliminate problems — it shifts them.
 
 * From network inefficiency → to server-side complexity
+* The right choice depends on your data access patterns, team size, and client diversity.
 
 ---
 
