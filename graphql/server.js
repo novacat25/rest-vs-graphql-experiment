@@ -26,7 +26,8 @@ const resolvers = {
   },
   Tweet: {
     author: (tweet) => {
-      return users.find(u => u.id === tweet.userId)
+        console.log(`Fetching author for tweet ${tweet.id}`)
+        return users.find(u => u.id === tweet.userId)
     },
   },
 }
